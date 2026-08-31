@@ -1,0 +1,83 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String           @id @default(cuid())
+  username  String           @unique
+  email     String?          @unique
+  createdAt DateTime         @default(now())
+  sessions  WorkoutSession[]
+}
+
+model WorkoutSession {
+  id                String        @id @default(cuid())
+  userId            String
+  routineName       String        @default("Mixed Combos")
+  startTime         DateTime      @default(now())
+  endTime           DateTime?
+  durationSeconds   Float         @default(0.0)
+  totalPunches      Int           @default(0)
+  peakVelocity      Float         @default(0.0) // m/s
+  avgVelocity       Float         @default(0.0) // m/s
+  peakAcceleration  Float         @default(0.0) // m/s^2
+  avgPower          Float         @default(0.0) // %
+  caloriesBurned    Float         @default(0.0) // kcal
+  highestCombo      Int           @default(0)
+  accuracyScore     Float         @default(0.0) // %
+
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strikes           StrikeLog[]
+  replays           ReplayFrame[]
+
+  @@index([userId])
+}
+
+model StrikeLog {
+  id                 String         @id @default(cuid())
+  sessionId          String
+  timestamp          Float
+  strikeType         String         // JAB/CROSS, HOOK, UPPERCUT, DUCK, SLIP
+  hand               String         // LEFT, RIGHT, DEFENSE
+  velocity           Float          @default(0.0) // m/s
+  acceleration       Float          @default(0.0) // m/s^2
+  power              Float          @default(0.0) // %
+  extension          Float          @default(0.0)
+  alignmentScore     Float          @default(0.0)
+  trajectoryQuality  String         @default("OPTIMAL")
+
+  session            WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model ReplayFrame {
+  id            String         @id @default(cuid())
+  sessionId     String
+  frameIndex    Int
+  timestamp     Float
+  poseLandmarks Json           // 33 3D coordinate array
+
+  session       WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model LeaderboardEntry {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  avatarUrl     String?
+  mode          String   @default("all")
+  highScore     Int      @default(0)
+  maxCombo      Int      @default(0)
+  peakVelocity  Float    @default(0.0)
+  punchesThrown Int      @default(0)
+  updatedAt     DateTime @default(now())
+
+  @@index([mode, highScore(sort: Desc)])
+}
