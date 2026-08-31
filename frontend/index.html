@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHADOW BOXER - AI WASM Boxing Physics Engine</title>
+  
+  <!-- SEO & Open Graph Metadata -->
+  <meta name="description" content="Local-first high-performance AI fitness tracker utilizing MediaPipe Pose and WASM to measure punch velocity, acceleration, power, and form.">
+  <meta name="keywords" content="shadow boxer, ai fitness, mediapipe, pose estimation, webassembly, front-end, boxing metrics, local first">
+  <meta name="author" content="Antigravity Front-End Architect">
+  
+  <meta property="og:title" content="SHADOW BOXER - AI WASM Boxing Physics Engine">
+  <meta property="og:description" content="Measure punch speed, power, and form in real-time with WebAssembly pose tracking. 100% local, private, and secure.">
+  <meta property="og:image" content="og-image.png">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="./index.html">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SHADOW BOXER - AI WASM Boxing Physics Engine">
+  <meta name="twitter:description" content="Track your speed and power with real-time browser-based computer vision.">
+  <meta name="twitter:image" content="og-image.png">
+  
+  <!-- Favicon References -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="alternate icon" type="image/png" href="favicon.svg">
+
+  <!-- Google Fonts for Futuristic Tech Look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Global Error Logger for UI Debugging -->
+  <script>
+    window.addEventListener('error', function(e) {
+      const errDiv = document.createElement('div');
+      errDiv.style.position = 'fixed';
+      errDiv.style.top = '10px';
+      errDiv.style.left = '10px';
+      errDiv.style.right = '10px';
+      errDiv.style.background = 'rgba(255, 0, 50, 0.95)';
+      errDiv.style.color = '#fff';
+      errDiv.style.padding = '15px';
+      errDiv.style.fontFamily = 'monospace';
+      errDiv.style.fontSize = '12px';
+      errDiv.style.zIndex = '99999';
+      errDiv.style.borderRadius = '8px';
+      errDiv.style.border = '2px solid #ff3333';
+      errDiv.style.boxShadow = '0 0 20px rgba(255,0,0,0.5)';
+      errDiv.innerHTML = '<strong>JS Error:</strong> ' + e.message + '<br><em>' + e.filename + ':' + e.lineno + '</em>';
+      document.body.appendChild(errDiv);
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      const errDiv = document.createElement('div');
+      errDiv.style.position = 'fixed';
+      errDiv.style.top = '10px';
+      errDiv.style.left = '10px';
+      errDiv.style.right = '10px';
+      errDiv.style.background = 'rgba(255, 0, 50, 0.95)';
+      errDiv.style.color = '#fff';
+      errDiv.style.padding = '15px';
+      errDiv.style.fontFamily = 'monospace';
+      errDiv.style.fontSize = '12px';
+      errDiv.style.zIndex = '99999';
+      errDiv.style.borderRadius = '8px';
+      errDiv.style.border = '2px solid #ff3333';
+      errDiv.style.boxShadow = '0 0 20px rgba(255,0,0,0.5)';
+      errDiv.innerHTML = '<strong>Unhandled Rejection:</strong> ' + e.reason;
+      document.body.appendChild(errDiv);
+    });
+  </script>
+</head>
+<body>
+
+  <!-- Background Grid & Glowing Orbs -->
+  <div class="bg-effects">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- WASM Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="loading-box">
+      <div class="spinner-container">
+        <div class="spinner"></div>
+        <div class="spinner-inner"></div>
+      </div>
+      <h2>SHADOW BOXER</h2>
+      <p id="loading-status">Loading WebAssembly Pose Model...</p>
+      <div class="progress-bar-container">
+        <div id="loading-progress" class="progress-bar" style="width: 0%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flash Effect Overlay for punch detection -->
+  <div id="punch-flash" class="punch-flash"></div>
+  <div id="pow-overlay" class="pow-overlay">POW!</div>
+
+  <!-- Main Layout -->
+  <main class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-box">
+          <svg class="logo-svg" viewBox="0 0 100 100" width="36" height="36">
+            <g filter="drop-shadow(0 0 5px rgba(0, 229, 255, 0.6))">
+              <path d="M 32 38 C 32 28, 42 20, 52 20 C 62 20, 68 26, 68 34 C 68 40, 64 45, 58 48 C 65 52, 68 58, 68 64 C 68 72, 60 80, 48 80 C 38 80, 32 72, 32 64 M 32 50 L 52 50" fill="none" stroke="url(#logo-grad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M 32 38 C 24 38, 20 44, 20 50 C 20 56, 24 62, 32 62" fill="none" stroke="#00ff9f" stroke-width="5" stroke-linecap="round"/>
+            </g>
+            <defs>
+              <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00e5ff" />
+                <stop offset="100%" stop-color="#ff007f" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>SHADOW <span class="accent-text">BOXER</span></h1>
+          <span class="version-tag">WASM ENGINE v1.2</span>
+        </div>
+      </div>
+
+      <div class="privacy-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="icon-shield"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>100% LOCAL PROCESSING</span>
+      </div>
+    </header>
+
+    <div class="workspace-grid">
+      
+      <!-- Left Panel: Live Dashboard & Metrics -->
+      <section class="panel-column left-panel">
+        
+        <!-- Quick Stats Banner -->
+        <div class="stat-card main-combo-card">
+          <div class="combo-title">CURRENT COMBO</div>
+          <div id="combo-count" class="combo-number">0</div>
+          <div id="combo-level" class="combo-sub">GET READY</div>
+          <button type="button" id="btn-get-started" class="btn btn-primary glow-btn btn-get-started" style="margin-top: 0.8rem; width: 100%; font-size: 0.85rem; padding: 0.6rem 1rem;">
+            GET STARTED
+          </button>
+        </div>
+
+        <!-- Training Focus Mode Card -->
+        <div class="stat-card focus-mode-card">
+          <div class="card-glow"></div>
+          <h3>TRAINING FOCUS MODE</h3>
+          <div class="focus-btn-group">
+            <button id="btn-focus-upper" class="btn-focus active" data-focus="upper">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+                <!-- boxing glove / fist icon -->
+                <path d="M 6 12 C 6 8, 9 6, 12 6 C 15 6, 18 8, 18 12 C 18 15, 15 17, 12 17 L 9 17 L 6 15 Z" />
+                <path d="M 6 12 C 4 12, 3 13, 3 14.5 C 3 16, 4 17, 6 17" />
+                <line x1="9" y1="17" x2="9" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+              <span>UPPER HALF</span>
+            </button>
+            <button id="btn-focus-lower" class="btn-focus" data-focus="lower">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+                <!-- shoe / foot stance icon -->
+                <path d="M 4 16 L 8 16 L 11 11 L 18 11 C 20 11, 21 12.5, 21 14 L 21 17 C 21 18.5, 19.5 20, 18 20 L 4 20 Z" />
+                <circle cx="7" cy="18" r="1" />
+              </svg>
+              <span>LOWER HALF</span>
+            </button>
+            <button id="btn-focus-full" class="btn-focus" data-focus="full">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none">
+                <!-- full boxer wireframe icon -->
+                <circle cx="12" cy="5" r="2.5" />
+                <path d="M 12 7.5 L 12 14 M 12 9 L 7 11 M 12 9 L 17 11 M 12 14 L 9 20 M 12 14 L 15 20" />
+              </svg>
+              <span>FULL BODY</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Combo Challenger Card -->
+        <div class="stat-card challenger-card">
+          <div class="card-glow"></div>
+          <div class="challenger-header">
+            <h3>COMBO CHALLENGER</h3>
+            <span id="challenger-badge" class="badge streak-badge">STREAK: 0</span>
+          </div>
+          <div class="target-combo-display" id="target-combo-display">
+            <!-- Populated by JS -->
+          </div>
+          <div class="challenger-sub">
+            <span class="sub-label">NEXT: <strong id="target-next-strike" class="accent-magenta">JAB</strong></span>
+            <span id="challenger-feedback" class="sub-hint">Follow the sequence!</span>
+          </div>
+        </div>
+
+        <!-- Metric Speed & Power Gauges -->
+        <div class="metrics-row">
+          <div class="stat-card metric-card">
+            <div class="metric-header">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <span>LAST PUNCH SPEED</span>
+            </div>
+            <div class="metric-val-group">
+              <span id="stat-speed" class="metric-val">0.0</span>
+              <span class="metric-unit">m/s</span>
+            </div>
+            <div class="metric-gauge">
+              <div id="speed-progress-bar" class="gauge-fill speed-fill" style="width: 0%;"></div>
+            </div>
+            <div class="metric-sub">Peak: <span id="peak-speed">0.0</span> m/s</div>
+          </div>
+
+          <div class="stat-card metric-card">
+            <div class="metric-header">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/></svg>
+              <span>PUNCH FORCE</span>
+            </div>
+            <div class="metric-val-group">
+              <span id="stat-power" class="metric-val">0</span>
+              <span class="metric-unit">%</span>
+            </div>
+            <div class="metric-gauge">
+              <div id="power-progress-bar" class="gauge-fill power-fill" style="width: 0%;"></div>
+            </div>
+            <div class="metric-sub">Peak: <span id="peak-power">0</span>%</div>
+          </div>
+        </div>
+
+        <!-- Punch Type Distribution -->
+        <div class="stat-card punch-counters-card">
+          <h3>PUNCH COUNTERS</h3>
+          <div class="punch-grid">
+            <div class="punch-stat-box main-count">
+              <span class="stat-label">TOTAL PUNCHES</span>
+              <span id="total-punches" class="stat-number">0</span>
+            </div>
+            <div class="punch-sub-grid">
+              <div class="punch-sub-stat">
+                <span class="punch-name">JAB / CROSS</span>
+                <span id="count-jab" class="punch-number">0</span>
+              </div>
+              <div class="punch-sub-stat">
+                <span class="punch-name">HOOK</span>
+                <span id="count-hook" class="punch-number">0</span>
+              </div>
+              <div class="punch-sub-stat">
+                <span class="punch-name">UPPERCUT</span>
+                <span id="count-uppercut" class="punch-number">0</span>
+              </div>
+              <div class="punch-sub-stat">
+                <span class="punch-name">UNCLASSIFIED</span>
+                <span id="count-other" class="punch-number">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Caloric & Time Analysis -->
+        <div class="stat-card calories-card">
+          <div class="card-glow"></div>
+          <div class="cal-row">
+            <div class="cal-item">
+              <span class="cal-label">ACTIVE TIME</span>
+              <span id="workout-timer" class="cal-val">00:00</span>
+            </div>
+            <div class="divider"></div>
+            <div class="cal-item">
+              <span class="cal-label">CALORIES BURNED</span>
+              <span id="calories-burned" class="cal-val">0.0</span>
+              <span class="cal-unit">kcal</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Center & Right Panel: Video Arena and Controls -->
+      <section class="panel-column arena-column">
+        
+        <!-- Video Arena -->
+        <div class="arena-card">
+          <div class="arena-header">
+            <div class="status-indicator">
+              <span id="engine-dot" class="status-dot offline"></span>
+              <span id="engine-status" class="status-text">SYSTEM OFFLINE</span>
+            </div>
+            <div class="fps-counter">FPS: <span id="fps-val">--</span></div>
+          </div>
+
+          <!-- Main Arena Workspace Row (Side-by-side on laptop/desktop, Stacked on mobile) -->
+          <div class="arena-workspace-row">
+            <!-- Interactive Structured Trainer HUD & Integrated AI Coach Banner -->
+            <div id="trainer-hud" class="trainer-hud-banner">
+              <div class="trainer-hud-header">
+                <span class="hud-phase-label">TRAINING PHASE: <strong id="hud-phase-name">PHASE 1 (STANCE)</strong></span>
+                <span id="hud-phase-progress" class="hud-phase-progress">HOLD STANCE</span>
+                <button type="button" id="btn-skip-phase" class="btn-build" style="font-size: 0.6rem; padding: 2px 6px; margin-left: auto;">SKIP STANCE</button>
+              </div>
+              <div id="hud-instructions" class="hud-instructions">ASSUME BOXING STANCE: Hands up near chin, feet staggered, knees slightly bent.</div>
+              <div id="hud-stance-checkers" class="hud-stance-checkers">
+                <span id="chk-guard" class="hud-check-item fail">GUARD</span>
+                <span id="chk-feet" class="hud-check-item fail">FEET STANCE</span>
+                <span id="chk-knees" class="hud-check-item fail">KNEE BEND</span>
+              </div>
+              <div id="hud-move-selector" class="hud-move-selector hidden">
+                <button type="button" class="btn-learn-move active" data-move="JAB/CROSS">JAB/CROSS</button>
+                <button type="button" class="btn-learn-move" data-move="HOOK">HOOK</button>
+                <button type="button" class="btn-learn-move" data-move="UPPERCUT">UPPERCUT</button>
+                <button type="button" class="btn-learn-move" data-move="DUCK">DUCK/WEAVE</button>
+              </div>
+
+              <!-- Single-Line Integrated AI Correction Coach Strip -->
+              <div class="hud-ai-coach-strip">
+                <div class="feedback-indicator">
+                  <div class="pulse-dot"></div>
+                  <span>AI COACH:</span>
+                </div>
+                <div id="coach-message" class="coach-text-single">Stand in front of the camera and assume guard stance to begin.</div>
+              </div>
+
+              <!-- Dedicated Next Action HUD Strip -->
+              <div id="hud-next-strip" class="hud-next-strip">
+                <span class="hud-next-label">NEXT TARGET / ACTION:</span>
+                <span id="hud-next-strike-val" class="hud-next-val">HOOK</span>
+              </div>
+            </div>
+
+            <div class="video-container">
+              <!-- Mirror webcam feed -->
+              <video id="webcam" autoplay playsinline muted></video>
+              <!-- Draw Pose skeleton overlay -->
+              <canvas id="canvas-overlay"></canvas>
+              
+              <!-- Setup Warning Overlay -->
+              <div id="webcam-warning" class="webcam-warning hidden">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <h3>Camera Access Needed</h3>
+                <p>Please grant camera access permission to track punches in real time.</p>
+                <button id="btn-grant-camera" class="btn btn-primary glow-btn">Grant Camera Permission</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Quick Control Strip under Video -->
+          <div class="arena-footer">
+            <div class="controls-row">
+              <div class="btn-group">
+                <button id="btn-toggle-camera" class="btn btn-primary" disabled>
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" class="icon-camera"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  <span id="toggle-camera-txt">Start Workout</span>
+                </button>
+                <button id="btn-toggle-hologram" class="btn btn-secondary" title="Toggle 3D Hologram Viewport">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                  <span id="toggle-hologram-txt">Hologram</span>
+                </button>
+                <button id="btn-reset" class="btn btn-secondary">
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  <span>Reset Stats</span>
+                </button>
+              </div>
+
+              <div class="btn-group font-settings">
+                <!-- Sound Toggle -->
+                <button id="btn-mute" class="btn btn-icon" title="Toggle Sound FX">
+                  <svg id="mute-icon-on" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                  <svg id="mute-icon-off" class="hidden" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                </button>
+                
+                <!-- Delegation Selector (CPU / GPU) -->
+                <div class="select-wrapper">
+                  <label for="select-delegate" class="sr-only">Processor delegation</label>
+                  <select id="select-delegate" class="select-input">
+                    <option value="GPU" selected>Engine: GPU (60 FPS)</option>
+                    <option value="CPU">Engine: CPU (Low Power)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fine-Tuning Physics & Workout Customizer -->
+        <div class="stat-card settings-card">
+          <div class="card-glow" style="background: linear-gradient(90deg, var(--neon-cyan), transparent);"></div>
+          
+          <div class="settings-flex-row">
+            <div class="settings-group">
+              <h3>WORKOUT ROUTINE</h3>
+              <div class="select-wrapper">
+                <label for="select-routine" class="sr-only">Workout routine selector</label>
+                <select id="select-routine" class="select-input">
+                  <option value="all" selected>Mixed combos (Default)</option>
+                  <option value="cardio">Cardio Blitz (Speed 1-2s)</option>
+                  <option value="power">Heavy Hitter (Power Strikes)</option>
+                  <option value="defense">Elusive Boxer (Slip & Duck focus)</option>
+                  <option value="custom">Custom Combo Builder...</option>
+                </select>
+              </div>
+            </div>
+            
+            <div id="custom-builder-container" class="settings-group hidden">
+              <h3>CUSTOM BUILDER</h3>
+              <div class="builder-buttons">
+                <button type="button" class="btn-build" data-strike="JAB/CROSS">JAB</button>
+                <button type="button" class="btn-build" data-strike="HOOK">HOOK</button>
+                <button type="button" class="btn-build" data-strike="UPPERCUT">UPPER</button>
+                <button type="button" class="btn-build" data-strike="DUCK">DUCK</button>
+                <button type="button" class="btn-build" data-strike="SLIP">SLIP</button>
+                <button type="button" id="btn-clear-custom" class="btn-build btn-clear">CLEAR</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <div class="setting-item">
+              <div class="setting-labels">
+                <span class="setting-name">PUNCH VELOCITY THRESHOLD</span>
+                <span id="val-speed-threshold" class="setting-val">1.5 m/s</span>
+              </div>
+              <input id="range-speed-threshold" type="range" min="0.8" max="6.0" step="0.1" value="1.5" class="range-slider">
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-labels">
+                <span class="setting-name">JITTER SMOOTHING FILTER</span>
+                <span id="val-filter-cutoff" class="setting-val">1.5 Hz</span>
+              </div>
+              <input id="range-filter-cutoff" type="range" min="0.5" max="3.0" step="0.1" value="1.5" class="range-slider">
+            </div>
+          </div>
+        </div>
+
+      </section>
+      
+    </div>
+  </main>
+
+  <!-- ES module initialization script -->
+  <script type="module" src="app.js?v=2"></script>
+</body>
+</html>
