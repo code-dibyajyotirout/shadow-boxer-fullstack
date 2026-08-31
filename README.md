@@ -1,14 +1,44 @@
 # Shadow Boxer: AI Boxing Physics Engine & Distributed Biomechanics Platform
 
-[![Stack](https://img.shields.io/badge/Stack-Next.js%2016%20%7C%20React%2019%20%7C%20TypeScript%20%7C%20FastAPI%20%7C%20PostgreSQL%20%7C%20Redis%207-00f0ff.svg)](#technology-stack)
+[![NPM Version](https://img.shields.io/npm/v/@animatrous/shadow-boxer.svg)](https://www.npmjs.com/package/@animatrous/shadow-boxer)
+[![NPM Package Repo](https://img.shields.io/badge/GitHub-NPM_Package-blue?logo=github)](https://github.com/code-dibyajyotirout/shadow-boxer-npm-package)
+[![Stack](https://img.shields.io/badge/Stack-Next.js%20%7C%20TypeScript%20%7C%20React%20%7C%20MediaPipe%20%7C%20Three.js%20%7C%20Zustand%20%7C%20tRPC%20%7C%20Prisma%20%7C%20PostgreSQL%20%7C%20Redis%20%7C%20Cloudflare-00f0ff.svg)](#technology-stack)
 [![Computer Vision](https://img.shields.io/badge/Computer%20Vision-MediaPipe%20WASM%20(33%20Landmarks)%20%7C%2060%20FPS-ff0055.svg)](#kinematic-physics-engine)
 [![Multiplayer](https://img.shields.io/badge/Multiplayer-WebRTC%20P2P%20DataChannel%20%7C%20%3C50ms%20RTT-00ff88.svg)](#webrtc-multiplayer-sparring)
 [![Caching](https://img.shields.io/badge/Caching-Redis%207%20Sorted%20Sets%20%7C%2070%25%20Read%20Offload-f59e0b.svg)](#redis-caching--leaderboard-architecture)
 [![License](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 
-**Shadow Boxer** is a high-throughput computer vision fitness platform and distributed telemetry system engineered to operate in dual mode: running 100% on-device inside the browser via Google MediaPipe WebAssembly (WASM) and hardware-accelerated Canvas rendering, or synchronizing with a distributed FastAPI backend backed by PostgreSQL 16 and Redis 7 sorted set leaderboards.
+**Shadow Boxer** is a high-throughput computer vision fitness platform and distributed telemetry system engineered to operate in dual mode: running 100% on-device inside the browser via Google MediaPipe WebAssembly (WASM), Canvas API, WebGL, and Three.js rendering, or synchronizing with a distributed backend backed by Prisma ORM, PostgreSQL 16, and Redis 7 sorted set leaderboards.
 
 It tracks 33 skeletal body landmarks in real time to calculate striking speed ($m/s$), instantaneous acceleration ($m/s^2$), kinetic force vectors, and combo accuracy at 60 FPS with zero server-side inference overhead.
+
+---
+
+## Standalone NPM Package
+
+The core kinematics engine, adaptive 1€ signal smoothing filters, procedural Web Audio synthesizer, and React UI components are published as a standalone library on the global NPM registry:
+
+```bash
+npm install @animatrous/shadow-boxer
+```
+
+- **NPM Package**: [https://www.npmjs.com/package/@animatrous/shadow-boxer](https://www.npmjs.com/package/@animatrous/shadow-boxer)
+- **NPM Library Source**: [https://github.com/code-dibyajyotirout/shadow-boxer-npm-package](https://github.com/code-dibyajyotirout/shadow-boxer-npm-package)
+
+```typescript
+// Subpath Module Imports
+import { ShadowBoxer, useShadowBoxer } from "@animatrous/shadow-boxer";
+import { BiomechanicsEngine, OneEuroFilter, StrikeClassifier } from "@animatrous/shadow-boxer/utils";
+import "@animatrous/shadow-boxer/style.css";
+```
+
+---
+
+## Technology Stack
+
+* **Frontend & Client**: Next.js 16, TypeScript, React 19, MediaPipe WASM, Canvas API, WebGL, Three.js, React Three Fiber, Zustand, Web Audio API, WebRTC
+* **Data Layer & API**: tRPC, Prisma ORM, PostgreSQL 16, Redis 7 (Sorted Sets & Pub/Sub), Cloudflare Workers (Edge Caching & Signaling)
+* **Backend Services**: FastAPI (Python 3.12, async Uvicorn runtime), SQLAlchemy 2.0 Async Engine, WebSockets
 
 ---
 
@@ -16,8 +46,8 @@ It tracks 33 skeletal body landmarks in real time to calculate striking speed ($
 
 ```mermaid
 flowchart TD
-    subgraph Client ["Client Browser (Next.js 16 + TypeScript)"]
-        UI["Cyberpunk HUD & UI\n(Canvas 2D / 3D Hologram Avatar)"]
+    subgraph Client ["Client Browser (Next.js + TypeScript + React + Zustand)"]
+        UI["Cyberpunk HUD & UI\n(Canvas API / WebGL / Three.js 3D Hologram)"]
         Recruiter["Recruiter & Architecture Hub\n(Interactive Benchmarks & 1-Click Presets)"]
         WASM["MediaPipe WASM Engine\n(33 3D Pose Landmarks @ 60 FPS)"]
         Filter["OneEuroFilter Signal Pipeline\n(Adaptive Cutoff Jitter Suppression)"]
@@ -25,14 +55,18 @@ flowchart TD
         Classifier["Strike Archetype Classifier\n(Jab/Cross, Hook, Uppercut, Slip, Duck)"]
         Audio["Procedural Web Audio Synthesizer\n(Noise Swooshes, Sub-bass Booms, Chimes)"]
         RTC["WebRTC P2P DataChannel\n(Serialized Pose Buffers & Punch Sync)"]
+        ZustandStore["Zustand State Store\n(Telemetry, Combos, Calibration State)"]
     end
 
-    subgraph Backend ["FastAPI Distributed Backend (Python 3.12)"]
-        API["FastAPI REST Gateway\n(/api/v1/sessions, /api/v1/leaderboard, /api/v1/analytics)"]
-        Signaling["WebRTC Signaling Manager\n(SDP Offer/Answer Exchange & ICE Queues)"]
-        WSHandler["WebSocket Stream Relay\n(/ws/sparring/{room_id})"]
+    subgraph Edge ["Edge & API Layer (tRPC + Cloudflare Workers)"]
+        EdgeWorker["Cloudflare Workers Edge Gateway\n(Edge Caching & WebRTC Signaling Relay)"]
+        TRPCRoutes["tRPC / REST API Gateway\n(/api/trpc, /api/v1/sessions, /api/v1/leaderboard)"]
+    end
+
+    subgraph Backend ["Distributed Services (FastAPI + Prisma / SQLAlchemy)"]
+        WSHandler["WebSocket Sparring Relay\n(/ws/sparring/{room_id})"]
         PhysicsBench["Server Kinematics Engine\n(Physics Validation & Signal Benchmarks)"]
-        DBLayer["SQLAlchemy 2.0 Async ORM\n(Sessions, StrikeLogs, Replays)"]
+        DBLayer["Prisma ORM / SQLAlchemy 2.0\n(Sessions, StrikeLogs, Replays)"]
         CacheLayer["Redis 7 Sorted Sets & Cache\n(Sub-10ms Leaderboards & Rate Limiting)"]
     end
 
@@ -46,16 +80,17 @@ flowchart TD
     Filter --> Kinematics
     Kinematics --> Classifier
     Classifier --> Audio
+    UI --> ZustandStore
     UI --> Recruiter
     UI --> RTC
 
     RTC <-->|P2P DataChannel (<50ms RTT)| RTC
-    UI <-->|Signaling & REST Sync| API
-    UI <-->|Live Multi-User Sparring| WSHandler
-    API --> Signaling
-    API --> PhysicsBench
-    API --> DBLayer
-    API --> CacheLayer
+    UI <-->|Signaling & Edge Routing| EdgeWorker
+    EdgeWorker --> TRPCRoutes
+    TRPCRoutes --> WSHandler
+    TRPCRoutes --> PhysicsBench
+    TRPCRoutes --> DBLayer
+    TRPCRoutes --> CacheLayer
 
     DBLayer --> Postgres
     CacheLayer --> RedisStore
@@ -67,16 +102,16 @@ flowchart TD
 
 | Capability | Technologies Used | Architectural Implementation & Code Verification |
 | :--- | :--- | :--- |
-| **1. 3D Biomechanics & Physics Engine** | Next.js, MediaPipe WASM, WebAssembly, Canvas API | Executes 3D coordinate vector transforms in real time at 60 FPS to compute live wrist velocity ($m/s$), instantaneous acceleration ($m/s^2$), and kinetic force curves with zero server inference overhead. |
-| **2. Dual-Mode Cyberpunk HUD & 3D Hologram** | Canvas 2D API, Perspective Projections, Matrix Math | Renders a dual-mode cyberpunk skeleton overlay—standard 2D HUD and 3D rotational hologram viewport—synchronized to live webcam frames with neon glow compositing and sub-frame strike flash effects. |
+| **1. 3D Biomechanics & Physics Engine** | Next.js, MediaPipe WASM, Canvas API, WebGL | Executes 3D coordinate vector transforms in real time at 60 FPS to compute live wrist velocity ($m/s$), instantaneous acceleration ($m/s^2$), and kinetic force curves with zero server inference overhead. |
+| **2. Dual-Mode Cyberpunk HUD & 3D Hologram** | Canvas 2D API, WebGL, Three.js, Matrix Math | Renders a dual-mode cyberpunk skeleton overlay—standard 2D HUD and 3D rotational hologram viewport—synchronized to live webcam frames with neon glow compositing and sub-frame strike flash effects. |
 | **3. Strike Archetype Classification** | TypeScript, Trigonometric Vectors | Classifies five strike and defense archetypes (Jab/Cross, Hook, Uppercut, Slip, Duck) by calculating elbow angles, wrist-to-shoulder extension ratios, and dominant-axis displacement vectors. |
 | **4. OneEuroFilter Jitter Suppression** | Adaptive Low-Pass Filter, Signal Processing | Suppresses camera sensor noise and landmark jitter during stationary stances while maintaining sub-150ms responsiveness on fast-twitch punches by dynamically adjusting cutoff frequency. |
 | **5. Procedural Web Audio Synthesis** | Web Audio API (Oscillators, Bandpass Filters) | Synthesizes dynamic sound effects—swept noise swooshes, 40Hz sub-bass impact booms, and C-major combo chimes—purely through code without loading external MP3/WAV files. |
-| **6. Full-Stack Monorepo Architecture** | Next.js 16, TypeScript, FastAPI, Python 3.12 | Decoupled client-server architecture with server-side rendered landing pages, dynamic REST endpoints, and Web Worker pose inference. |
-| **7. WebRTC P2P Multiplayer Sparring** | WebRTC DataChannels, ArrayBuffer Serialization | Dispatches real-time multiplayer sparring sessions over peer-to-peer WebRTC data channels, transmitting serialized Float32Array pose landmark buffers at sub-50ms latency. |
-| **8. Relational Progression Schemas** | PostgreSQL 16, SQLAlchemy 2.0, Pydantic v2 | Models persistent user progression schemas tracking per-session punch volume, velocity curves, caloric burn, and combo streaks across authenticated timelines. |
+| **6. Full-Stack Monorepo Architecture** | Next.js, TypeScript, React, Zustand, tRPC | Decoupled client-server architecture with server-side rendered landing pages, dynamic tRPC/REST endpoints, Zustand state management, and Web Worker pose inference. |
+| **7. WebRTC P2P Multiplayer Sparring** | WebRTC DataChannels, Cloudflare Workers, Binary Serialization | Dispatches real-time multiplayer sparring sessions over peer-to-peer WebRTC data channels, transmitting serialized Float32Array pose landmark buffers at sub-50ms latency. |
+| **8. Relational Progression Schemas** | Prisma ORM, PostgreSQL 16, SQLAlchemy 2.0 | Models persistent user progression schemas tracking per-session punch volume, velocity curves, caloric burn, and combo streaks across authenticated timelines. |
 | **9. Redis 7 Sorted Set Leaderboards** | Redis 7, Sorted Sets (`ZADD`, `ZREVRANGE`) | Caches global rankings and session metadata in Redis, reducing database read pressure by 70% while serving sub-10ms sorted set queries for competitive standings. |
-| **10. 3D Rigged Avatar Projection** | Canvas 3D Projections, Linear Algebra | Projects 33 skeletal body landmarks onto a rotational 3D wireframe avatar mesh, enabling 360-degree form inspection and session playback. |
+| **10. 3D Rigged Avatar Projection** | Three.js, React Three Fiber, Linear Algebra | Projects 33 skeletal body landmarks onto a rigged 3D wireframe avatar mesh, enabling 360-degree form inspection and session playback. |
 
 ---
 
