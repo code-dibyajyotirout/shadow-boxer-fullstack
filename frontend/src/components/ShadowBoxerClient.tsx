@@ -138,7 +138,7 @@ export default function ShadowBoxerClient() {
               <div className="stat-card metric-card">
                 <div className="metric-header">
                   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                  <span>LAST PUNCH SPEED</span>
+                  <span>STRIKE EXTENSION SPEED</span>
                 </div>
                 <div className="metric-val-group">
                   <span id="stat-speed" className="metric-val">0.0</span>
@@ -147,7 +147,7 @@ export default function ShadowBoxerClient() {
                 <div className="metric-gauge">
                   <div id="speed-progress-bar" className="gauge-fill speed-fill" style={{ width: "0%" }}></div>
                 </div>
-                <div className="metric-sub">Peak: <span id="peak-speed">0.0</span> m/s</div>
+                <div className="metric-sub">Pelvis-Relative | Peak: <span id="peak-speed">0.0</span> m/s</div>
               </div>
 
               <div className="stat-card metric-card">
