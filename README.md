@@ -37,6 +37,7 @@ import "@animatrous/shadow-boxer/style.css";
 ## Technology Stack
 
 * **Frontend & Client**: Next.js 16, TypeScript, React 19, MediaPipe WASM, Canvas API, WebGL, Three.js, React Three Fiber, Zustand, Web Audio API, WebRTC
+* **Kinematics & Physics Engine**: MediaPipe hip-relative metric `poseWorldLandmarks` derivation for camera-invariant punch velocity ($m/s$), OneEuroFilter adaptive signal smoothing
 * **Data Layer & API**: tRPC, Prisma ORM, PostgreSQL 16, Redis 7 (Sorted Sets & Pub/Sub), Cloudflare Workers (Edge Caching & Signaling)
 * **Backend Services**: FastAPI (Python 3.12, async Uvicorn runtime), SQLAlchemy 2.0 Async Engine, WebSockets
 
